@@ -1,7 +1,7 @@
 # BÁO CÁO ĐÁNH GIÁ CHẤT LƯỢNG & ĐẶC TẢ HỆ THỐNG CHATBOT STOW (MYSTORAGE)
 **Mã tài liệu:** `AUDIT-MYSTORAGE-STOW-2026-01`  
 **Phạm vi kiểm thử:** Chatbot STOW (`stow.mystorage.vn`), Web Booking Production (`booking.mystorage.vn`), Tài liệu chuẩn dữ liệu (`llms.txt`)  
-**Tác giả thực hiện:** N. Q. S.
+**Tác giả thực hiện:** Nguyễn Quang Sáng
 **Ngày thực hiện:** 15/09 – 16/09/2026  
 **Trạng thái:** Đã hoàn thành & Đối soát thực tế  
 
@@ -11,7 +11,7 @@
 
 Quá trình kiểm thử thực tế trên môi trường Production của MyStorage ghi nhận hệ thống Chatbot STOW có nền tảng prompt engineering tương đối vững chắc ở các kịch bản an toàn cơ bản: tuân thủ nghiêm ngặt quy định an toàn PCCC (từ chối lưu trữ bình gas mini, xăng dầu, pháo hoa), nhận thức tốt về giới hạn hình học 3D (từ chối chứa vật thể dài 3.5m vào khoang lập phương 1m³) và có cơ chế phản hồi cố định (canned responses) để phòng thủ trước các nỗ lực Prompt Injection / Jailbreak.
 
-Tuy nhiên, hệ thống bộc lộ những điểm nghẽn nghiêm trọng ở tầng chuyển đổi phễu kinh doanh (Conversion Funnel), tính đồng bộ dữ liệu khuyến mãi theo thời gian thực (Real-time Context Sync), chất lượng truy xuất dữ liệu RAG và độ hoàn thiện trạng thái mạng phía giao diện người dùng. Đáng kể nhất là sự cô lập hoàn toàn giữa Chatbot STOW và Web Booking Engine: khách hàng đã hoàn thành tư vấn và cung cấp đầy đủ thông tin cá nhân nhưng vẫn bị đứt luồng chuyển đổi, phải nhập liệu lại từ đầu trên trang web đặt chỗ, làm gia tăng ma sát trải nghiệm và gây nguy cơ thất thoát doanh thu trực tiếp.
+Tuy nhiên, hệ thống bộc lộ những điểm nghẽn nghiêm trọng ở tầng chuyển đổi phễu kinh doanh (Conversion Funnel), tính đồng bộ dữ liệu khuyến mãi theo thời gian thực (Real-time Context Sync), chất lượng truy xuất dữ liệu RAG và cấu hình guardrail. Đáng kể nhất là sự cô lập hoàn toàn giữa Chatbot STOW và Web Booking Engine: khách hàng đã hoàn thành tư vấn và cung cấp đầy đủ thông tin cá nhân nhưng vẫn bị đứt luồng chuyển đổi, phải nhập liệu lại từ đầu trên trang web đặt chỗ, làm gia tăng ma sát trải nghiệm và gây nguy cơ thất thoát doanh thu trực tiếp.
 
 ---
 
@@ -32,6 +32,10 @@ Tuy nhiên, hệ thống bộc lộ những điểm nghẽn nghiêm trọng ở 
 
 * **Phân loại:** Conversion Architecture / Business Integration.
 * **Mức độ nghiêm trọng:** **Critical** (Ảnh hưởng trực tiếp đến doanh thu và tỷ lệ chốt đơn).
+* **Các bước tái hiện:**
+  1. Tư vấn đến khi bot đề xuất kho tự quản 5m³ tại An Phú.
+  2. Cung cấp thông tin liên hệ và yêu cầu link thanh toán cọc giữ chỗ.
+  3. Quan sát bot chỉ hứa chuyển thông tin cho chuyên viên; mở booking production và xác nhận phải chọn lại từ đầu.
 * **Mô tả hành vi (Observed Behavior):**
   * Khách hàng cung cấp đầy đủ thông tin định danh: Họ tên, Số điện thoại, Email, nhu cầu thuê khoang tự quản 5m³ tại chi nhánh An Phú và chủ động yêu cầu link thanh toán cọc giữ chỗ.
   * Bot STOW dừng lại ở phản hồi dạng text tĩnh, hứa hẹn chuyên viên tư vấn sẽ liên hệ thủ công qua điện thoại.
@@ -42,6 +46,7 @@ Tuy nhiên, hệ thống bộc lộ những điểm nghẽn nghiêm trọng ở 
 * **Nguyên nhân kỹ thuật (Root Cause):**
   * Thiếu tầng Function Calling / Tool Use để kết nối API CRM tạo Lead/Quote trực tiếp từ context của bot.
   * Thiếu cơ chế Deep-link State Hydration (chuyển đổi thực thể trong chat thành URL Query Parameters dạng `https://booking.mystorage.vn/vi/book?step=quote&service=self-storage&size=5&facility=an-phu&name=...&phone=...`).
+* **Giải pháp đề xuất:** Tạo handoff contract có cấu trúc giữa STOW và Booking/CRM. Prototype minh họa action card cùng trang booking mô phỏng đọc query params đã hydrate; production cần endpoint hoặc token handoff được hai hệ thống hỗ trợ chính thức.
 * **Bằng chứng kiểm thử (Chat Log):**
 
 > **User:**  
@@ -65,6 +70,10 @@ Tuy nhiên, hệ thống bộc lộ những điểm nghẽn nghiêm trọng ở 
 
 * **Phân loại:** Dynamic Context & RAG Ingestion.
 * **Mức độ nghiêm trọng:** **High** (Ảnh hưởng nghiêm trọng đến uy tín thương hiệu).
+* **Các bước tái hiện:**
+  1. Mở banner AutoLocker đang hiển thị ưu đãi Trung Thu 16% trên booking production.
+  2. Hỏi STOW liệu ưu đãi có áp dụng cho kho tự quản 5m³ An Phú hay chỉ AutoLocker.
+  3. Quan sát bot phủ nhận toàn bộ campaign rồi trả chính sách chiết khấu kho tự quản.
 * **Mô tả hành vi (Observed Behavior):**
   * Trên giao diện production của cổng đặt chỗ (`booking.mystorage.vn/vi/autolocker`), hệ thống hiển thị banner nổi bật: *"🏮 TẾT TRUNG THU 2026 — Giảm 16% — Tất cả cỡ tủ · Mọi thời gian thuê · Mọi địa điểm tủ khoá thông minh · Tự động áp dụng khi đặt tủ · 07/09 – 27/09"*.
   * Khi khách hàng hỏi về chương trình giảm giá 16% và điều kiện áp dụng, bot phủ nhận hoàn toàn và khẳng định hệ thống không có chương trình này cho cả kho tự quản lẫn tủ khóa thông minh.
@@ -74,6 +83,7 @@ Tuy nhiên, hệ thống bộc lộ những điểm nghẽn nghiêm trọng ở 
 * **Nguyên nhân kỹ thuật (Root Cause):**
   * Cơ sở dữ liệu RAG (Knowledge Base) hoạt động dưới dạng tài liệu tĩnh (Static Context).
   * Chưa tích hợp API truy vấn các chiến dịch tiếp thị đang kích hoạt (Active Marketing Promotions API) theo thời gian thực để đưa vào system prompt.
+* **Giải pháp đề xuất:** Nạp campaign active từ nguồn có thời hạn hiệu lực, gắn metadata theo sản phẩm và buộc câu trả lời tách rõ AutoLocker 16% với chiết khấu kho tự quản 5%-15%.
 * **Bằng chứng kiểm thử (Chat Log):**
 
 > **User:**  
@@ -103,6 +113,10 @@ Tuy nhiên, hệ thống bộc lộ những điểm nghẽn nghiêm trọng ở 
 
 * **Phân loại:** Knowledge Retrieval Accuracy / Domain Specificity.
 * **Mức độ nghiêm trọng:** **Medium** (Ảnh hưởng phân khúc khách hàng cao cấp).
+* **Các bước tái hiện:**
+  1. Hỏi bằng tiếng Anh về nhiệt độ, độ ẩm và facility dành cho khoảng 20 thùng rượu.
+  2. Ghi nhận câu trả lời `15°C` và `55%-65%`.
+  3. Đối chiếu với `llms.txt`: chuẩn đúng là `12°C-15°C` và `60%-70%`.
 * **Mô tả hành vi (Observed Behavior):**
   * Khách hàng truy vấn tiêu chuẩn kỹ thuật kiểm soát nhiệt độ và độ ẩm cho hầm rượu (Wine Cellar) tại TP.HCM.
   * Bot phản hồi dải độ ẩm kiểm soát là **55% – 65%** và nhiệt độ xấp xỉ 15°C.
@@ -111,6 +125,7 @@ Tuy nhiên, hệ thống bộc lộ những điểm nghẽn nghiêm trọng ở 
   * Khách hàng phân khúc cao cấp (nhà sưu tầm rượu vang) có thể đánh giá cơ sở không đạt chuẩn kỹ thuật quốc tế và từ chối sử dụng dịch vụ.
 * **Nguyên nhân kỹ thuật (Root Cause):**
   * Nhiễu ngữ nghĩa (Semantic Ambiguity) trong Vector Search: Hệ thống nhầm lẫn giữa thông số kiểm soát độ ẩm của kho máy lạnh thông thường (55%–65%) với khoang rượu vang chuyên dụng (60%–70%) do thiếu phân tách metadata chặt chẽ.
+* **Giải pháp đề xuất:** Tách metadata theo `service_type=wine_storage`, ưu tiên canonical record từ `llms.txt` và thêm evaluation cố định kiểm tra cả dải nhiệt độ lẫn độ ẩm trước khi phát hành.
 * **Bằng chứng kiểm thử (Chat Log):**
 
 > **User:**  
@@ -140,6 +155,10 @@ Tuy nhiên, hệ thống bộc lộ những điểm nghẽn nghiêm trọng ở 
 
 * **Phân loại:** Guardrail Configuration / UX Friction.
 * **Mức độ nghiêm trọng:** **Medium** (Giảm tính hữu dụng đối với người dùng kỹ thuật và khách hàng B2B).
+* **Các bước tái hiện:**
+  1. Yêu cầu bot so sánh kho tự quản An Phú và kho dịch vụ Đồng Nai.
+  2. Yêu cầu trả đúng JSON với các trường an toàn phục vụ bảng tính cá nhân.
+  3. Quan sát bot kích hoạt canned refusal dù không có yêu cầu dữ liệu nội bộ hoặc bí mật.
 * **Mô tả hành vi (Observed Behavior):**
   * Người dùng yêu cầu xuất bảng so sánh dịch vụ thông thường sang định dạng JSON hợp lệ để phục vụ quản lý chi phí cá nhân.
   * Bot tự động kích hoạt câu trả lời từ chối cố định ("bằng cất sofa") thay vì hỗ trợ định dạng dữ liệu có cấu trúc.
@@ -147,6 +166,7 @@ Tuy nhiên, hệ thống bộc lộ những điểm nghẽn nghiêm trọng ở 
   * Tạo rào cản tương tác đối với khách hàng doanh nghiệp hoặc người dùng chuyên nghiệp cần tổng hợp dữ liệu báo giá nhanh.
 * **Nguyên nhân kỹ thuật (Root Cause):**
   * Bộ lọc Guardrail nhận diện các từ khóa `JSON`, `schema` như một hành vi tấn công trích xuất dữ liệu (Data Scraping / Prompt Injection) và chặn toàn bộ request ở tầng kiểm duyệt prompt thay vì đánh giá ngữ cảnh an toàn.
+* **Giải pháp đề xuất:** Phân loại theo ngữ cảnh và độ nhạy dữ liệu thay vì chặn từ khóa. Với dữ liệu công khai, render JSON hợp lệ có schema allowlist và nút Copy; từ chối riêng các trường nội bộ hoặc nhạy cảm.
 * **Bằng chứng kiểm thử (Chat Log):**
 
 > **User:**  
@@ -254,3 +274,33 @@ Mở trang Booking với toàn bộ query params
 2. **Dynamic Promo Badging (Khắc phục FINDING-02):** Tự động truy vấn và hiển thị huy hiệu khuyến mãi đang chạy tương ứng với dịch vụ và chi nhánh.
 3. **Hardware Spec Enforcement (Khắc phục FINDING-03):** Hiển thị trực tiếp thông số chuẩn từ `llms.txt` đối với các loại kho đặc thù (Hầm rượu: 12°C–15°C, độ ẩm 60%–70%).
 4. **Structured JSON Response (Khắc phục FINDING-04):** Khi khách hàng yêu cầu xuất bảng so sánh dạng JSON, bot render JSON code block có nút Copy JSON đúng ngữ cảnh, thay vì gắn chức năng copy payload đơn hàng vào thẻ giữ chỗ.
+
+---
+
+## 6. PHẠM VI KIỂM THỬ & NGUỒN DỮ LIỆU
+
+| Hạng mục đề bài | Trạng thái | Bằng chứng / ghi chú |
+| :--- | :--- | :--- |
+| Pricing & booking | Đã kiểm thử | F1, F2 và booking handoff prototype |
+| Độ chính xác với `llms.txt` | Đã kiểm thử | F3 và protection tiers trong F1 |
+| Tone & guardrail | Đã kiểm thử | F4 cùng các control baseline PASS |
+| Language handling | Đã kiểm thử | Kịch bản F3 bằng tiếng Anh; prototype phản hồi theo ngôn ngữ prompt độc lập với ngôn ngữ UI |
+| Error/empty states | Baseline prototype | Có trạng thái typing/disabled, fallback microphone, empty history và chặn gửi trùng; không được báo cáo thành production finding |
+| Mobile/responsive | Đã hiện thực, chưa có screenshot matrix | Layout responsive có breakpoint desktop/mobile; chưa thực hiện bộ ảnh kiểm tra nhiều viewport |
+| Accessibility | Baseline, cần audit cuối | Có semantic button, label, focus state và keyboard controls; cần chạy keyboard/screen-reader audit cuối |
+| Speed | Không load test | Tuân thủ yêu cầu không automated hammering; chỉ xác minh production build và tương tác thủ công |
+
+Nguồn canonical cho company/service facts, protection tiers và thông số hầm rượu là `https://mystorage.vn/llms.txt`. Giá, availability và campaign là snapshot quan sát trên production trong ngày 15-16/09/2026, không phải dữ liệu realtime. Prototype không tạo booking thật và không gọi CRM production.
+
+---
+
+## 7. GHI CHÚ HIỆN THỰC PROTOTYPE
+
+### Cách chạy
+
+```bash
+npm install
+npm run dev
+```
+
+Mở `http://localhost:3000`, chọn một Audit Replay từ F1-F4, chờ transcript chạy hết rồi chuyển giữa **Bản cũ**, **Bản cải tiến** hoặc **So sánh 2 bên**. F1 mở booking page mô phỏng đã hydrate dữ liệu; F4 hiển thị JSON comparison có nút Copy.

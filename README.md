@@ -1,36 +1,77 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# STOW Audit Replay & Smart Booking Handoff
 
-## Getting Started
+Working prototype for the MyStorage Product Engineering Intern assignment. It replays four production audit findings and demonstrates improved responses and booking handoff behavior side by side.
 
-First, run the development server:
+Repository: https://github.com/Sangquangnqs/stow-handoff
+
+## What The Prototype Covers
+
+| Finding | Production issue | Prototype improvement |
+| --- | --- | --- |
+| F1 | The chat loses booking context and asks the customer to start again | A structured reservation card opens a simulated booking page with pre-filled query state |
+| F2 | STOW denies an active AutoLocker campaign | The improved response separates the 16% AutoLocker campaign from self-storage duration discounts |
+| F3 | Wine-cellar humidity and temperature are confused with regular AC storage | The response uses the canonical `12°C-15°C` and `60%-70%` ranges from `llms.txt` |
+| F4 | A safe JSON export request triggers an over-defensive refusal | A valid comparison payload is rendered in a copyable JSON block |
+
+The first screen is the usable prototype, not a marketing page. Select an Audit Replay card to watch the original transcript appear message by message, then switch between the old and improved responses or open the large comparison modal.
+
+## Main Features
+
+- Animated Audit Replay for F1-F4.
+- Before, after, and side-by-side comparison modes.
+- Persistent local conversation history using `localStorage`.
+- Vietnamese and English interface support.
+- Per-message language detection so English prompts receive English responses even when the UI is Vietnamese.
+- File attachment preview, browser speech-to-text, and direct voice submission.
+- Smart Booking Handoff Card with masked customer information.
+- Simulated booking page that reads the handoff query parameters.
+- Copyable structured JSON response for F4.
+
+## Run Locally
+
+Requirements: Node.js 20 or newer and npm.
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Production verification:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run lint
+npm run build
+npm start
+```
 
-## Learn More
+Microphone features work best in Chrome or Edge and require browser permission. Conversation history is stored only in the current browser.
 
-To learn more about Next.js, take a look at the following resources:
+## Project Structure
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+| Path | Responsibility |
+| --- | --- |
+| `src/app/page.tsx` | Route entry point |
+| `src/components/StowHandoffPrototype.tsx` | Main interaction and conversation state |
+| `src/components/stow/StowChatParts.tsx` | Replay, sidebar, chat, and comparison modal |
+| `src/components/SmartBookingHandoffCard.tsx` | Reservation handoff card |
+| `src/app/vi/book/page.tsx` | Simulated booking destination |
+| `src/lib/stow-handoff-data.ts` | Types, transcripts, responses, and JSON data |
+| `docs/` | Vietnamese and English audit reports |
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Data Provenance
 
-## Deploy on Vercel
+- Canonical company and service facts: https://mystorage.vn/llms.txt
+- Real booking entry point: https://booking.mystorage.vn/en/book?step=service
+- Campaign, availability, and price values are audit snapshots captured from the production UI and conversations on 15-16 September 2026.
+- Wine-storage specifications and protection limits are treated as canonical `llms.txt` facts.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+The prototype does not call a production booking or CRM API. `/vi/book` is deliberately labelled as a simulation and exists to demonstrate state hydration without creating a fake reservation.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Known Limitations
+
+- Chat replies are deterministic prototype scenarios, not calls to the production STOW model.
+- Pricing and campaign information are dated audit snapshots and must be revalidated before a real booking.
+- The booking page demonstrates the proposed contract; it does not modify `booking.mystorage.vn` or create reservations.
+- Browser speech recognition support varies by browser.

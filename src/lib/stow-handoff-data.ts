@@ -279,7 +279,11 @@ export const auditScenarios: AuditScenario[] = [
     "facility": "An Phú (Quận 2)",
     "service_type": "Kho tự quản (Self-Storage)",
     "size": "5m³ (Máy lạnh)",
-    "monthly_rate": 1796000,
+    "pricing_3_months": {
+      "monthly_rate": 1796000,
+      "months": 3,
+      "subtotal_before_vat": 5388000
+    },
     "deposit": 1796000,
     "access_hours": "24/7",
     "insurance_tiers": {
@@ -293,7 +297,11 @@ export const auditScenarios: AuditScenario[] = [
     "facility": "Tổng kho Đồng Nai",
     "service_type": "Kho dịch vụ (Valet Storage)",
     "size": "5m³ (Máy lạnh)",
-    "monthly_rate": 1892000,
+    "pricing_3_months": {
+      "monthly_rate": 1892000,
+      "months": 3,
+      "subtotal_before_vat": 5676000
+    },
     "add_on_service": 2500000,
     "access_hours": "Giờ hành chính",
     "insurance_tiers": {
@@ -309,7 +317,11 @@ export const auditScenarios: AuditScenario[] = [
     "facility": "An Phu (District 2)",
     "service_type": "Self-Storage",
     "size": "5m³ (AC)",
-    "monthly_rate": 1796000,
+    "pricing_3_months": {
+      "monthly_rate": 1796000,
+      "months": 3,
+      "subtotal_before_vat": 5388000
+    },
     "deposit": 1796000,
     "access_hours": "24/7",
     "insurance_tiers": {
@@ -323,7 +335,11 @@ export const auditScenarios: AuditScenario[] = [
     "facility": "Dong Nai warehouse",
     "service_type": "Valet Storage",
     "size": "5m³ (AC)",
-    "monthly_rate": 1892000,
+    "pricing_3_months": {
+      "monthly_rate": 1892000,
+      "months": 3,
+      "subtotal_before_vat": 5676000
+    },
     "add_on_service": 2500000,
     "access_hours": "Business hours",
     "insurance_tiers": {

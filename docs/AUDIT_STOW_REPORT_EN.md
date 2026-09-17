@@ -2,7 +2,7 @@
 
 **Document ID:** `AUDIT-MYSTORAGE-STOW-2026-01`  
 **Testing scope:** STOW Chatbot (`stow.mystorage.vn`), Production Web Booking (`booking.mystorage.vn`), canonical data specification (`llms.txt`)  
-**Auditor:** N. Q. S.
+**Auditor:** Nguyen Quang Sang
 **Execution date:** September 15-16, 2026  
 **Status:** Completed & validated against production behavior  
 
@@ -12,7 +12,7 @@
 
 Production testing of MyStorage shows that the STOW Chatbot has a relatively solid prompt-engineering foundation for basic safety scenarios: it strictly follows fire-safety rules (refusing to store mini gas canisters, gasoline, fireworks), demonstrates good awareness of 3D geometric constraints (refusing to fit a 3.5m object into a 1m³ cube), and uses fixed canned responses to defend against Prompt Injection / Jailbreak attempts.
 
-However, the system exposes serious bottlenecks in the business conversion funnel, real-time promotional context synchronization, RAG retrieval quality, and frontend network-state completeness. Most notably, the STOW Chatbot and the Web Booking Engine are completely isolated: customers who have already completed consultation and provided full personal information are still dropped out of the conversion flow and forced to re-enter everything from scratch on the booking website. This creates unnecessary experience friction and a direct revenue-leakage risk.
+However, the system exposes serious bottlenecks in the business conversion funnel, real-time promotional context synchronization, RAG retrieval quality, and guardrail configuration. Most notably, the STOW Chatbot and the Web Booking Engine are completely isolated: customers who have already completed consultation and provided full personal information are still dropped out of the conversion flow and forced to re-enter everything from scratch on the booking website. This creates unnecessary experience friction and a direct revenue-leakage risk.
 
 ---
 
@@ -33,6 +33,10 @@ However, the system exposes serious bottlenecks in the business conversion funne
 
 * **Category:** Conversion Architecture / Business Integration.
 * **Severity:** **Critical** (direct impact on revenue and close rate).
+* **Steps to reproduce:**
+  1. Continue the consultation until STOW recommends a 5m³ self-storage unit at An Phu.
+  2. Provide contact details and request a deposit-payment link to hold the unit.
+  3. Observe that STOW only promises a consultant callback; open production Booking and confirm that the selection starts again.
 * **Observed behavior:**
   * The customer provides full identifying information: full name, phone number, email, demand for a 5m³ self-storage unit at the An Phu branch, and explicitly asks for a deposit payment link to hold the unit.
   * STOW stops at a static text response, saying that a consultant will manually contact the customer by phone.
@@ -43,6 +47,7 @@ However, the system exposes serious bottlenecks in the business conversion funne
 * **Technical root cause:**
   * Missing Function Calling / Tool Use layer to connect to the CRM API and create a Lead/Quote directly from the bot context.
   * Missing Deep-Link State Hydration mechanism to convert chat entities into URL query parameters, for example: `https://booking.mystorage.vn/vi/book?step=quote&service=self-storage&size=5&facility=an-phu&name=...&phone=...`.
+* **Proposed fix:** Define a structured handoff contract between STOW and Booking/CRM. The prototype demonstrates an action card and a simulated booking page consuming hydrated query state; production should use an officially supported endpoint or short-lived handoff token.
 * **Test evidence (Chat Log):**
 
 > **User:**  
@@ -66,6 +71,10 @@ However, the system exposes serious bottlenecks in the business conversion funne
 
 * **Category:** Dynamic Context & RAG Ingestion.
 * **Severity:** **High** (serious impact on brand credibility).
+* **Steps to reproduce:**
+  1. Open the active 16% Mid-Autumn AutoLocker banner on production Booking.
+  2. Ask STOW whether the offer applies to 5m³ An Phu self-storage or only AutoLocker.
+  3. Observe that the bot denies the campaign and substitutes ordinary self-storage duration discounts.
 * **Observed behavior:**
   * On the production booking interface (`booking.mystorage.vn/vi/autolocker`), the system displays a prominent banner: *"🏮 TET TRUNG THU 2026 — 16% off — All locker sizes · All rental durations · All smart-locker locations · Automatically applied when booking · 07/09 - 27/09"*.
   * When the customer asks about the 16% promotion and its eligibility conditions, the bot completely denies it and states that the system has no such campaign for either self-storage or smart lockers.
@@ -75,6 +84,7 @@ However, the system exposes serious bottlenecks in the business conversion funne
 * **Technical root cause:**
   * The RAG knowledge base operates as static documentation.
   * The system has not integrated a real-time Active Marketing Promotions API into the system prompt/context layer.
+* **Proposed fix:** Retrieve active campaigns from a source with validity dates, tag them by product, and require responses to distinguish the 16% AutoLocker campaign from the 5%-15% self-storage duration discounts.
 * **Test evidence (Chat Log):**
 
 > **User:**  
@@ -104,6 +114,10 @@ However, the system exposes serious bottlenecks in the business conversion funne
 
 * **Category:** Knowledge Retrieval Accuracy / Domain Specificity.
 * **Severity:** **Medium** (impact on the premium customer segment).
+* **Steps to reproduce:**
+  1. Ask in English for the exact temperature, humidity, and facility for approximately 20 cases of wine.
+  2. Record the answer of approximately `15°C` and `55%-65%` humidity.
+  3. Compare it with `llms.txt`, which specifies `12°C-15°C` and `60%-70%`.
 * **Observed behavior:**
   * The customer asks about exact technical standards for temperature and humidity control for wine storage in HCMC.
   * The bot answers that humidity is controlled at **55% - 65%** and temperature is approximately 15°C.
@@ -112,6 +126,7 @@ However, the system exposes serious bottlenecks in the business conversion funne
   * Premium customers such as wine collectors may judge the facility as failing to meet international technical standards and decline the service.
 * **Technical root cause:**
   * Semantic ambiguity in vector search: the system confuses humidity specifications for ordinary air-conditioned storage (55%-65%) with dedicated wine-cellar units (60%-70%) due to insufficient metadata separation.
+* **Proposed fix:** Separate records with `service_type=wine_storage`, prioritize the canonical `llms.txt` record, and add a fixed evaluation that verifies both temperature and humidity ranges before release.
 * **Test evidence (Chat Log):**
 
 > **User:**  
@@ -141,6 +156,10 @@ However, the system exposes serious bottlenecks in the business conversion funne
 
 * **Category:** Guardrail Configuration / UX Friction.
 * **Severity:** **Medium** (reduces usefulness for technical users and B2B customers).
+* **Steps to reproduce:**
+  1. Ask STOW to compare An Phu self-storage with Dong Nai valet storage.
+  2. Request safe public fields as valid JSON for a personal spreadsheet.
+  3. Observe the canned refusal even though no internal or sensitive data was requested.
 * **Observed behavior:**
   * The user asks to export an ordinary service-comparison table into valid JSON for personal cost-management purposes.
   * The bot automatically triggers a fixed refusal response ("certified only in sofa storage") instead of supporting a safe structured-data format.
@@ -148,6 +167,7 @@ However, the system exposes serious bottlenecks in the business conversion funne
   * Creates friction for business customers or professional users who need to quickly aggregate quotation data.
 * **Technical root cause:**
   * The guardrail filter treats keywords such as `JSON` and `schema` as suspicious data extraction / prompt-injection behavior and blocks the entire request at the prompt-moderation layer instead of evaluating whether the context is safe.
+* **Proposed fix:** Classify the request by context and data sensitivity rather than keywords. For public data, render valid JSON through an allowlisted schema and Copy action while refusing only internal or sensitive fields.
 * **Test evidence (Chat Log):**
 
 > **User:**  
@@ -259,3 +279,33 @@ pre-filled through State Hydration
 2. **Dynamic Promo Badging (fixes FINDING-02):** Automatically queries and displays active promotion badges that match the service and branch.
 3. **Hardware Spec Enforcement (fixes FINDING-03):** Directly displays canonical specs from `llms.txt` for specialized storage types, such as Wine Cellar: 12°C-15°C and 60%-70% humidity.
 4. **Structured JSON Response (fixes FINDING-04):** When the customer asks for a JSON comparison table, the bot renders a JSON code block with a contextual Copy JSON button instead of attaching order-payload export to the reservation card.
+
+---
+
+## 6. Audit Coverage & Data Sources
+
+| Assignment area | Status | Evidence / note |
+| :--- | :--- | :--- |
+| Pricing & booking | Tested | F1, F2, and the booking-handoff prototype |
+| Accuracy against `llms.txt` | Tested | F3 and the F1 protection tiers |
+| Tone & guardrails | Tested | F4 and the PASS control-baseline scenarios |
+| Language handling | Tested | F3 uses English; the prototype responds in the prompt language independently of the UI locale |
+| Error/empty states | Prototype baseline | Typing/disabled states, microphone fallback, empty history, and duplicate-submit prevention; not claimed as a production finding |
+| Mobile/responsive | Implemented; no screenshot matrix yet | Responsive breakpoints are present; a multi-viewport screenshot set has not been produced |
+| Accessibility | Baseline; final audit pending | Semantic buttons, labels, focus states, and keyboard controls are present; a final keyboard/screen-reader pass remains |
+| Speed | No load testing | Complies with the no-hammering rule; only production build and manual interaction were verified |
+
+The canonical source for company/service facts, protection tiers, and wine-storage specifications is `https://mystorage.vn/llms.txt`. Prices, availability, and campaign details are production snapshots observed on 15-16 September 2026, not real-time data. The prototype does not create real bookings or call the production CRM.
+
+---
+
+## 7. Prototype Implementation Notes
+
+### How to run
+
+```bash
+npm install
+npm run dev
+```
+
+Open `http://localhost:3000`, select an F1-F4 Audit Replay, wait for the transcript to complete, then switch between **Before**, **After**, or **Compare side by side**. F1 opens the hydrated simulated booking page; F4 renders the copyable comparison JSON.
