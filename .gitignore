@@ -29,6 +29,9 @@ CLAUDE.md
 .claude/
 .codex/
 
+# local research notes
+docs/MYSTORAGE_SYSTEM_REQUIREMENTS.md
+
 # debug
 npm-debug.log*
 yarn-debug.log*

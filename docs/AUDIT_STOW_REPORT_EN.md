@@ -2,7 +2,7 @@
 
 **Document ID:** `AUDIT-MYSTORAGE-STOW-2026-01`  
 **Testing scope:** STOW Chatbot (`stow.mystorage.vn`), Production Web Booking (`booking.mystorage.vn`), canonical data specification (`llms.txt`)  
-**Auditor:** Nguyen Quang Sang  
+**Auditor:** N. Q. S.
 **Execution date:** September 15-16, 2026  
 **Status:** Completed & validated against production behavior  
 
@@ -24,11 +24,10 @@ However, the system exposes serious bottlenecks in the business conversion funne
 | **FINDING-02** | Context Synchronization | Active Campaign Denial (Mid-Autumn 2026 Promo) | **High** | RAG Engine, Dynamic Promo API | Dynamic Promo Badging & API Ingestion |
 | **FINDING-03** | Knowledge Retrieval | Technical Specification Hallucination (Wine Cellar) | **Medium** | Vector DB / Knowledge Base (`llms.txt`) | Hardware Spec Enforcement (Metadata Filtering) |
 | **FINDING-04** | Guardrail Configuration | Over-defensive Refusal on Structured Data Export | **Medium** | System Prompt Guardrail Filters | Client-side Data Export / Safe JSON Serializer |
-| **FINDING-05** | UI & Network State | Unsent-Message Duplication & Missing In-Flight State | **Medium** | Client-side State, API Idempotency | Optimistic Network State Machine + Idempotency Keys |
 
 ---
 
-## 3. Detailed Specification of 5 Findings & Production Evidence
+## 3. Detailed Specification of 4 Findings & Production Evidence
 
 ### FINDING-01: Broken Booking Funnel & Session Isolation
 
@@ -47,10 +46,10 @@ However, the system exposes serious bottlenecks in the business conversion funne
 * **Test evidence (Chat Log):**
 
 > **User:**  
-> I want to finalize renting a 5m³ unit at the An Phu branch now. My information: Nguyen Quang Sang, phone 0911\*\*\*\*\*\*3, email s***@gmail.com. Please send me the deposit payment link to hold the unit.
+> I want to finalize renting a 5m³ unit at the An Phu branch now. My information: N. Q. S., phone 0911\*\*\*\*\*\*3, email s***@gmail.com. Please send me the deposit payment link to hold the unit.
 >
 > **STOW Assistant:**  
-> Yes, I have recorded all of your information, Mr. Nguyen Quang Sang (phone: 0911\*\*\*\*\*3, email: s***@gmail.com), with your need to rent a 5m³ self-storage unit at the An Phu branch.  
+> Yes, I have recorded all of your information, Mr. N. Q. S. (phone: 0911\*\*\*\*\*3, email: s***@gmail.com), with your need to rent a 5m³ self-storage unit at the An Phu branch.
 > The responsible MyStorage consultant will contact you directly by phone shortly to help send the confirmation link and hold the most suitable unit for you.
 
 * **Visual evidence:**
@@ -163,28 +162,6 @@ However, the system exposes serious bottlenecks in the business conversion funne
 
 ---
 
-### FINDING-05: Missing In-Flight State & Duplicate Prompt Submission
-
-* **Category:** UI/UX Resilience & Network State Management.
-* **Severity:** **Medium** (confuses the conversation flow and wastes tokens).
-* **Observed behavior:**
-  * When the user sends a message and the network is unstable or the bot's reasoning time is long:
-    * The input field or send button is not disabled, and there is no clear in-flight state indicator such as a loading spinner or "Sending..." label.
-    * Because no visual feedback is shown, the user thinks the system has not received the request and sends the same prompt a second time.
-    * The interface has no client-side duplicate-submission prevention, so the same user message appears twice consecutively in the chat stream.
-* **Business & technical impact:**
-  * Creates a confusing and interrupted user experience, making the application feel frozen or broken.
-  * The chatbot backend receives two duplicate requests for the same question, wasting server resources and doubling token inference cost unnecessarily.
-* **Technical root cause:**
-  * The client UI lacks message-state management (`isSubmitting: boolean` or `status: 'idle' | 'sending' | 'error'`): the send button is not locked immediately after submission.
-  * Missing duplicate-control mechanism (Idempotency Key / Request Deduplication) to reject identical requests sent in a short time window, for example under 3-5 seconds.
-
-* **Visual evidence:**
-
-![FINDING-05 evidence](screenshots/f5.png)
-
----
-
 ## 4. Safety Control Baseline Evidence (PASS)
 
 ### 1. Fire-Safety Compliance Test (Hazardous Materials Refusal - PASS)
@@ -243,7 +220,7 @@ However, the system exposes serious bottlenecks in the business conversion funne
 
 ## 5. Proposed Solution Architecture: Smart Booking Handoff Card
 
-To fully resolve **FINDING-01** (broken conversion flow), while also covering **FINDING-02, FINDING-03, FINDING-04**, and **FINDING-05**, the proposed solution is to build an intermediate structured UI component: a **Smart Interactive Booking Handoff Card**.
+To fully resolve **FINDING-01** (broken conversion flow), while also covering **FINDING-02, FINDING-03, FINDING-04**, the proposed solution is to build an intermediate structured UI component: a **Smart Interactive Booking Handoff Card**.
 
 ```text
 +-----------------------------------------------------------------------+
@@ -255,7 +232,7 @@ To fully resolve **FINDING-01** (broken conversion flow), while also covering **
                                     v
 +-----------------------------------------------------------------------+
 |            SMART INTERACTIVE BOOKING HANDOFF CARD (COMPONENT)         |
-|  - Customer: Nguyen Quang Sang | 0911****** | s***@gmail.com          |
+|  - Customer: N. Q. S. | 0911****** | s***@gmail.com                  |
 |  - Specification: 5m³ self-storage unit (AC) · An Phu branch          |
 |  - Canonical specs: [Temperature 12-15°C | Humidity 60%-70%]          |
 |  - Dynamic Promo Tag: [Mid-Autumn 2026: -16% AutoLocker]              |
@@ -269,17 +246,16 @@ To fully resolve **FINDING-01** (broken conversion flow), while also covering **
             +-----------------------+-----------------------+
             |                                               |
             v                                               v
-[Primary button: Confirm & Hold Now]          [Secondary button: Copy JSON]
-(Fixes FINDING-01 via deep link)              (Fixes FINDING-04)
-Opens Booking with all query params           Copies the order payload directly
-pre-filled through State Hydration            to the clipboard safely
+[Primary button: Confirm & Hold Now]
+(Fixes FINDING-01 via deep link)
+Opens Booking with all query params
+pre-filled through State Hydration
 ```
 
 ### Technical pillars of the solution
 
 1. **Deep-Link State Hydration Engine (fixes FINDING-01):** Automatically packages extracted entities into a URL:  
-   `https://booking.mystorage.vn/vi/book?step=quote&service=self-storage&size=5&facility=an-phu&name=Nguyen+Quang+Sang&phone=0911***683&email=s***%40gmail.com`
+   `https://booking.mystorage.vn/vi/book?step=quote&service=self-storage&size=5&facility=an-phu&name=N.+Q.+S.&phone=0911***683&email=s***%40gmail.com`
 2. **Dynamic Promo Badging (fixes FINDING-02):** Automatically queries and displays active promotion badges that match the service and branch.
 3. **Hardware Spec Enforcement (fixes FINDING-03):** Directly displays canonical specs from `llms.txt` for specialized storage types, such as Wine Cellar: 12°C-15°C and 60%-70% humidity.
-4. **Client-side JSON Serialization (fixes FINDING-04):** Provides a UI button to copy the JSON order payload without requiring the bot to bypass text-moderation filters.
-5. **Optimistic Network State Management (fixes FINDING-05):** Manages client-side message state (`idle | pending | error`) with Retry and `idempotency-key` to eliminate duplicate messages during unstable network conditions.
+4. **Structured JSON Response (fixes FINDING-04):** When the customer asks for a JSON comparison table, the bot renders a JSON code block with a contextual Copy JSON button instead of attaching order-payload export to the reservation card.

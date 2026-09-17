@@ -8,8 +8,8 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: Arial, Helvetica, sans-serif;
+  --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -22,5 +22,77 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+}
+
+.message-enter {
+  animation: message-enter 220ms ease-out both;
+}
+
+.audit-replay-panel {
+  animation: audit-panel-enter 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.audit-replay-card {
+  animation: audit-card-enter 460ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.audit-shimmer {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(110deg, transparent 20%, rgba(0, 119, 188, 0.08) 42%, transparent 62%),
+    radial-gradient(circle at 12% 20%, rgba(0, 119, 188, 0.08), transparent 28%),
+    radial-gradient(circle at 88% 10%, rgba(16, 185, 129, 0.08), transparent 24%);
+  transform: translateX(-35%);
+  animation: audit-shimmer 3.8s ease-in-out infinite;
+}
+
+@keyframes message-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes audit-panel-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.985);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes audit-card-enter {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.97);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes audit-shimmer {
+  0%,
+  100% {
+    transform: translateX(-35%);
+    opacity: 0.65;
+  }
+
+  50% {
+    transform: translateX(35%);
+    opacity: 1;
+  }
 }

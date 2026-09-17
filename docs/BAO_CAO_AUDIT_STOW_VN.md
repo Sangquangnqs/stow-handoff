@@ -1,7 +1,7 @@
 # BÁO CÁO ĐÁNH GIÁ CHẤT LƯỢNG & ĐẶC TẢ HỆ THỐNG CHATBOT STOW (MYSTORAGE)
 **Mã tài liệu:** `AUDIT-MYSTORAGE-STOW-2026-01`  
 **Phạm vi kiểm thử:** Chatbot STOW (`stow.mystorage.vn`), Web Booking Production (`booking.mystorage.vn`), Tài liệu chuẩn dữ liệu (`llms.txt`)  
-**Tác giả thực hiện:** Nguyễn Quang Sáng  
+**Tác giả thực hiện:** N. Q. S.
 **Ngày thực hiện:** 15/09 – 16/09/2026  
 **Trạng thái:** Đã hoàn thành & Đối soát thực tế  
 
@@ -15,7 +15,7 @@ Tuy nhiên, hệ thống bộc lộ những điểm nghẽn nghiêm trọng ở 
 
 ---
 
-## 2. MA TRẬN PHÂN LOẠI 5 LỖI HỆ THỐNG (SYSTEM BUG MATRIX)
+## 2. MA TRẬN PHÂN LOẠI 4 LỖI HỆ THỐNG (SYSTEM BUG MATRIX)
 
 | Mã lỗi | Phân loại | Tên lỗi kỹ thuật | Mức độ | Hệ thống liên quan | Giải pháp kiến trúc đề xuất |
 | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -23,11 +23,10 @@ Tuy nhiên, hệ thống bộc lộ những điểm nghẽn nghiêm trọng ở 
 | **FINDING-02** | Context Synchronization | Active Campaign Denial (Trung Thu 2026 Promo) | **High** | RAG Engine, Dynamic Promo API | Dynamic Promo Badging & API Ingestion |
 | **FINDING-03** | Knowledge Retrieval | Technical Specification Hallucination (Wine Cellar) | **Medium** | Vector DB / Knowledge Base (`llms.txt`) | Hardware Spec Enforcement (Metadata Filtering) |
 | **FINDING-04** | Guardrail Configuration | Over-defensive Refusal on Structured Data Export | **Medium** | System Prompt Guardrail Filters | Client-side Data Export / Safe JSON Serializer |
-| **FINDING-05** | UI & Network State | Missing In-Flight State & Duplicate Prompt Submission | **Medium** | Client-side State, API Idempotency | UI Debounce/Loading State & Client-side Deduplication |
 
 ---
 
-## 3. BẢN ĐẶC TẢ CHI TIẾT 5 PHÁT HIỆN & BẰNG CHỨNG THỰC TẾ
+## 3. BẢN ĐẶC TẢ CHI TIẾT 4 PHÁT HIỆN & BẰNG CHỨNG THỰC TẾ
 
 ### FINDING-01: Broken Booking Funnel & Session Isolation (Đứt gãy luồng chuyển đổi & Cô lập phiên)
 
@@ -46,10 +45,10 @@ Tuy nhiên, hệ thống bộc lộ những điểm nghẽn nghiêm trọng ở 
 * **Bằng chứng kiểm thử (Chat Log):**
 
 > **User:**  
-> Mình muốn chốt thuê khoang 5m³ ở chi nhánh An Phú luôn. Thông tin của mình: Nguyễn Quang Sáng, SĐT 0911\*\*\*\*\*\*3, email s***@gmail.com. Gửi mình link thanh toán cọc giữ chỗ với.
+> Mình muốn chốt thuê khoang 5m³ ở chi nhánh An Phú luôn. Thông tin của mình: N. Q. S., SĐT 0911\*\*\*\*\*\*3, email s***@gmail.com. Gửi mình link thanh toán cọc giữ chỗ với.
 > 
 > **STOW Assistant:**  
-> Dạ em đã ghi nhận đầy đủ thông tin của anh Nguyễn Quang Sáng (SĐT: 0911\*\*\*\*\*3, Email: s***@gmail.com) với nhu cầu thuê khoang tự quản 5m³ tại chi nhánh An Phú ạ.  
+> Dạ em đã ghi nhận đầy đủ thông tin của anh N. Q. S. (SĐT: 0911\*\*\*\*\*3, Email: s***@gmail.com) với nhu cầu thuê khoang tự quản 5m³ tại chi nhánh An Phú ạ.
 > Chuyên viên phụ trách của MyStorage sẽ nhanh chóng liên hệ trực tiếp qua số điện thoại của anh để hỗ trợ gửi link xác nhận và giữ chỗ khoang phù hợp nhất cho anh nhé ạ!
 
 * **Bằng chứng hình ảnh:**
@@ -162,28 +161,6 @@ Tuy nhiên, hệ thống bộc lộ những điểm nghẽn nghiêm trọng ở 
 
 ---
 
-### FINDING-05: Missing In-Flight State & Duplicate Prompt Submission (Thiếu chỉ báo gửi tin dẫn đến người dùng gửi lặp)
-
-* **Phân loại:** UI/UX Resilience & Network State Management.
-* **Mức độ nghiêm trọng:** **Medium** (Làm rối luồng hội thoại và tiêu tốn token vô ích).
-* **Mô tả hành vi (Observed Behavior):**
-  * Khi người dùng bấm gửi tin nhắn, nếu gặp mạng chập chờn hoặc thời gian xử lý suy luận của bot kéo dài:
-    * Ô nhập liệu hoặc nút gửi không bị vô hiệu hóa (disabled) và không có chỉ báo trạng thái gửi tin rõ ràng (như loading spinner hay nhãn "Đang gửi...").
-    * Do không nhận được phản hồi trực quan, người dùng tưởng hệ thống chưa nhận lệnh nên đã chủ động bấm gửi lại cùng một prompt lần thứ hai.
-    * Giao diện không có cơ chế chặn gửi lặp phía client, dẫn đến việc cùng một nội dung tin nhắn của người dùng xuất hiện 2 lần liên tiếp trên luồng chat.
-* **Tác động kinh doanh & Kỹ thuật (Impact):**
-  * Gây trải nghiệm gián đoạn và bối rối cho người dùng (tưởng ứng dụng bị đơ hoặc lỗi giao diện).
-  * Backend chatbot nhận liên tiếp 2 request trùng lặp cho cùng một câu hỏi, gây lãng phí tài nguyên máy chủ và nhân đôi chi phí token inference không cần thiết.
-* **Nguyên nhân kỹ thuật (Root Cause):**
-  * Tầng giao diện (Client UI) thiếu quản lý máy trạng thái tin nhắn (`isSubmitting: boolean` hoặc `status: 'idle' | 'sending' | 'error'`): chưa khóa nút gửi (debounce/disable) ngay khi vừa phát lệnh.
-  * Thiếu cơ chế kiểm soát trùng lặp (Idempotency Key / Request Deduplication) để từ chối các request giống hệt nhau gửi dồn dập trong khoảng thời gian ngắn (ví dụ < 3-5 giây).
-
-* **Bằng chứng hình ảnh:**
-
-![FINDING-05 evidence](screenshots/f5.png)
-
----
-
 ## 4. PHỤ LỤC BẰNG CHỨNG KIỂM THỬ AN TOÀN (CONTROL BASELINE - PASS)
 
 ### 1. Kiểm thử tuân thủ quy định PCCC (Hazardous Materials Refusal - PASS)
@@ -239,7 +216,7 @@ Tuy nhiên, hệ thống bộc lộ những điểm nghẽn nghiêm trọng ở 
 
 ## 5. KIẾN TRÚC GIẢI PHÁP ĐỀ XUẤT: SMART BOOKING HANDOFF CARD
 
-Nhằm giải quyết triệt để **FINDING-01** (Đứt gãy luồng chuyển đổi) đồng thời bao bọc xử lý toàn bộ các phát hiện **FINDING-02, FINDING-03, FINDING-04**, và **FINDING-05**, giải pháp đề xuất xây dựng một thành phần giao diện trung gian có cấu trúc (**Structured UI Handoff Component**).
+Nhằm giải quyết triệt để **FINDING-01** (Đứt gãy luồng chuyển đổi) đồng thời bao bọc xử lý các phát hiện **FINDING-02, FINDING-03, FINDING-04**, giải pháp đề xuất xây dựng một thành phần giao diện trung gian có cấu trúc (**Structured UI Handoff Component**).
 
 ```
 +-----------------------------------------------------------------------+
@@ -251,7 +228,7 @@ Nhằm giải quyết triệt để **FINDING-01** (Đứt gãy luồng chuyển
                                     v
 +-----------------------------------------------------------------------+
 |            SMART INTERACTIVE BOOKING HANDOFF CARD (COMPONENT)         |
-|  - Khách hàng: Nguyễn Quang Sáng | 0911****** | s***@gmail.com        |
+|  - Khách hàng: N. Q. S. | 0911****** | s***@gmail.com                |
 |  - Quy cách: Kho tự quản 5m³ (Máy lạnh) • Chi nhánh An Phú            |
 |  - Thông số kỹ thuật hiển thị chuẩn: [Nhiệt độ 12-15°C | Độ ẩm 60-70%]|
 |  - Dynamic Promo Tag: [🏮 Trung Thu 2026: -16% AutoLocker]           |
@@ -265,16 +242,15 @@ Nhằm giải quyết triệt để **FINDING-01** (Đứt gãy luồng chuyển
             +-----------------------+-----------------------+
             |                                               |
             v                                               v
-[Nút chính: Xác nhận & Giữ chỗ ngay]         [Nút phụ: Sao chép JSON]
-(Khắc phục FINDING-01 qua Deep-link)         (Khắc phục FINDING-04)
-Mở trang Booking với toàn bộ query params    Copy trực tiếp payload đơn hàng
-đã được điền sẵn (State Hydration)           vào bộ nhớ tạm an toàn
+[Nút chính: Xác nhận & Giữ chỗ ngay]
+(Khắc phục FINDING-01 qua Deep-link)
+Mở trang Booking với toàn bộ query params
+đã được điền sẵn (State Hydration)
 ```
 
 ### Các trụ cột kỹ thuật của giải pháp:
 1. **Deep-Link State Hydration Engine (Khắc phục FINDING-01):** Tự động đóng gói các thực thể đã trích xuất vào URL:  
-   `https://booking.mystorage.vn/vi/book?step=quote&service=self-storage&size=5&facility=an-phu&name=Nguyen+Quang+Sang&phone=0911***683&email=s***%40gmail.com`
+   `https://booking.mystorage.vn/vi/book?step=quote&service=self-storage&size=5&facility=an-phu&name=N.+Q.+S.&phone=0911***683&email=s***%40gmail.com`
 2. **Dynamic Promo Badging (Khắc phục FINDING-02):** Tự động truy vấn và hiển thị huy hiệu khuyến mãi đang chạy tương ứng với dịch vụ và chi nhánh.
 3. **Hardware Spec Enforcement (Khắc phục FINDING-03):** Hiển thị trực tiếp thông số chuẩn từ `llms.txt` đối với các loại kho đặc thù (Hầm rượu: 12°C–15°C, độ ẩm 60%–70%).
-4. **Client-side JSON Serialization (Khắc phục FINDING-04):** Cung cấp nút sao chép payload JSON đơn hàng ngay trên giao diện mà không cần bot phải bypass qua bộ lọc kiểm duyệt văn bản.
-5. **Optimistic Network State Management (Khắc phục FINDING-05):** Quản lý trạng thái tin nhắn phía client (`idle | pending | error`) kèm cơ chế Retry và `idempotency-key` để triệt tiêu hoàn toàn lỗi nhân đôi tin nhắn khi chập chờn mạng.
+4. **Structured JSON Response (Khắc phục FINDING-04):** Khi khách hàng yêu cầu xuất bảng so sánh dạng JSON, bot render JSON code block có nút Copy JSON đúng ngữ cảnh, thay vì gắn chức năng copy payload đơn hàng vào thẻ giữ chỗ.
