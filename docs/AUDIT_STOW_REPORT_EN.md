@@ -59,11 +59,21 @@ However, the system exposes serious bottlenecks in the business conversion funne
 
 * **Visual evidence:**
 
+**Before - Production STOW**
+
 ![FINDING-01 evidence 1](screenshots/f1.png)
 
 ![FINDING-01 evidence 2](screenshots/f1_2.png)
 
 ![FINDING-01 evidence 3](screenshots/f1_3.png)
+
+**After - Prototype verification**
+
+![FINDING-01 improved response](screenshots/f1_after.png)
+
+![FINDING-01 structured handoff card](screenshots/f1_2_after.png)
+
+![FINDING-01 pre-filled booking simulation](screenshots/f1_3_after.png)
 
 ---
 
@@ -104,9 +114,15 @@ However, the system exposes serious bottlenecks in the business conversion funne
 
 * **Visual evidence:**
 
+**Before - Production STOW**
+
 ![FINDING-02 evidence 1](screenshots/f2.png)
 
 ![FINDING-02 evidence 2](screenshots/f2_2.png)
+
+**After - Prototype verification**
+
+![FINDING-02 improved promotion response](screenshots/f2_after.png)
 
 ---
 
@@ -146,9 +162,15 @@ However, the system exposes serious bottlenecks in the business conversion funne
 
 * **Visual evidence:**
 
+**Before - Production STOW**
+
 ![FINDING-03 evidence 1](screenshots/f3.png)
 
 ![FINDING-03 evidence 2](screenshots/f3_2.png)
+
+**After - Prototype verification**
+
+![FINDING-03 canonical wine-storage specifications](screenshots/f3_after.png)
 
 ---
 
@@ -178,7 +200,13 @@ However, the system exposes serious bottlenecks in the business conversion funne
 
 * **Visual evidence:**
 
+**Before - Production STOW**
+
 ![FINDING-04 evidence](screenshots/f4.png)
+
+**After - Prototype verification**
+
+![FINDING-04 valid copyable comparison JSON](screenshots/f4_after.png)
 
 ---
 

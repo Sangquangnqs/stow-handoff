@@ -58,11 +58,21 @@ Tuy nhiên, hệ thống bộc lộ những điểm nghẽn nghiêm trọng ở 
 
 * **Bằng chứng hình ảnh:**
 
+**Trước cải tiến - STOW trên hệ thống thực tế**
+
 ![FINDING-01 evidence 1](screenshots/f1.png)
 
 ![FINDING-01 evidence 2](screenshots/f1_2.png)
 
 ![FINDING-01 evidence 3](screenshots/f1_3.png)
+
+**Sau cải tiến - Xác minh trên prototype**
+
+![FINDING-01 phản hồi cải tiến](screenshots/f1_after.png)
+
+![FINDING-01 thẻ chuyển tiếp đặt chỗ](screenshots/f1_2_after.png)
+
+![FINDING-01 trang Booking mô phỏng có dữ liệu điền sẵn](screenshots/f1_3_after.png)
 
 ---
 
@@ -103,9 +113,15 @@ Tuy nhiên, hệ thống bộc lộ những điểm nghẽn nghiêm trọng ở 
 
 * **Bằng chứng hình ảnh:**
 
+**Trước cải tiến - STOW trên hệ thống thực tế**
+
 ![FINDING-02 evidence 1](screenshots/f2.png)
 
 ![FINDING-02 evidence 2](screenshots/f2_2.png)
+
+**Sau cải tiến - Xác minh trên prototype**
+
+![FINDING-02 phản hồi khuyến mãi đã cải tiến](screenshots/f2_after.png)
 
 ---
 
@@ -145,9 +161,15 @@ Tuy nhiên, hệ thống bộc lộ những điểm nghẽn nghiêm trọng ở 
 
 * **Bằng chứng hình ảnh:**
 
+**Trước cải tiến - STOW trên hệ thống thực tế**
+
 ![FINDING-03 evidence 1](screenshots/f3.png)
 
 ![FINDING-03 evidence 2](screenshots/f3_2.png)
+
+**Sau cải tiến - Xác minh trên prototype**
+
+![FINDING-03 thông số hầm rượu theo nguồn chuẩn](screenshots/f3_after.png)
 
 ---
 
@@ -177,7 +199,13 @@ Tuy nhiên, hệ thống bộc lộ những điểm nghẽn nghiêm trọng ở 
 
 * **Bằng chứng hình ảnh:**
 
+**Trước cải tiến - STOW trên hệ thống thực tế**
+
 ![FINDING-04 evidence](screenshots/f4.png)
+
+**Sau cải tiến - Xác minh trên prototype**
+
+![FINDING-04 JSON so sánh hợp lệ và có thể sao chép](screenshots/f4_after.png)
 
 ---
 

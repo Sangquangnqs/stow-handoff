@@ -4,6 +4,14 @@ Working prototype for the MyStorage Product Engineering Intern assignment. It re
 
 Repository: https://github.com/Sangquangnqs/stow-handoff
 
+## Project Links
+
+- [Live Demo](https://mystorage-stow-nine.vercel.app/)
+- [Assignment Report - English](docs/STOW_ASSIGNMENT_REPORT.md)
+- [Assignment Report - Vietnamese](docs/STOW_ASSIGNMENT_REPORT_VN.md)
+- [Vietnamese Audit Report](docs/BAO_CAO_AUDIT_STOW_VN.md)
+- [English Audit Report](docs/AUDIT_STOW_REPORT_EN.md)
+
 ## What The Prototype Covers
 
 | Finding | Production issue | Prototype improvement |
